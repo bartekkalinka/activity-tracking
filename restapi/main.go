@@ -15,6 +15,12 @@ type data struct {
 	Z float64 `json:"z"`
 }
 
+type trainingData struct {
+	UserId string `json:"userID"`
+	Activity string `json:"activity"`
+	CurData data `json:"acceleration"`
+}
+
 func main() {
 	m := mux.NewRouter()
 	m.HandleFunc("/acceleration", handleAcceleration)
@@ -42,4 +48,19 @@ func handleAcceleration(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleTraining(w http.ResponseWriter, r *http.Request) {
+	myData := &trainingData{}
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = json.Unmarshal(data, &myData)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(myData.UserId, ":", myData.Activity, ":", myData.CurData.Timestamp, ":", myData.CurData.X)
+	w.WriteHeader(http.StatusCreated)
 }
