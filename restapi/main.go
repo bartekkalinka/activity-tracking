@@ -74,7 +74,7 @@ func handleTraining(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	session.
+	session.Query(`INSERT INTO training (UserID, activity`)
 
 	w.WriteHeader(http.StatusCreated)
 }
