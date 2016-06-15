@@ -2,10 +2,12 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/gocql/gocql"
 	"net/http"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 type data struct {
@@ -21,7 +23,16 @@ type trainingData struct {
 	CurData data `json:"acceleration"`
 }
 
+var session gocql.Session
+
 func main() {
+	cluster := gocql.NewCluster(os.Args[1])
+
+	cluster.Keyspace = "activitytracking"
+	cluster.
+	var err error
+	session, err = cluster.
+
 	m := mux.NewRouter()
 	m.HandleFunc("/acceleration", handleAcceleration)
 	m.HandleFunc("/training", handleTraining)
