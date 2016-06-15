@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        tools:context="pl.tracking.androidapp.MainActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical" android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:weightSum="1">
 
-    <android.support.design.widget.AppBarLayout
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
-    </android.support.design.widget.AppBarLayout>
-
-    <include layout="@layout/content_main"/>
-
-    <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
+    <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
-            android:src="@android:drawable/ic_dialog_email"/>
+            android:layout_height="69dp"
+            android:text="Welcome to Accelerometer!"
+            android:id="@+id/welcomeMessage"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_marginTop="20dp"
+            android:textSize="28dp"
+            android:textIsSelectable="false" />
 
-</android.support.design.widget.CoordinatorLayout>
+    <TextView
+            android:layout_width="351dp"
+            android:layout_height="46dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Please enter Rest Api URL:"
+            android:id="@+id/urlEditLabel"
+            android:layout_gravity="left|center_vertical"
+            android:layout_marginTop="50dp" />
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editURL"
+            android:text="http://192.168.1.102:3000"
+            android:layout_marginTop="10dp"
+            android:layout_weight="0.17" />
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:id="@+id/button_start"
+            android:layout_weight="0.07"
+            android:layout_marginTop="50dp" />
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Collect data"
+            android:id="@+id/button_collect" />
+</LinearLayout>
