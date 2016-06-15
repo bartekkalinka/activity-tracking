@@ -29,10 +29,12 @@ func main() {
 	cluster := gocql.NewCluster(os.Args[1])
 
 	cluster.Keyspace = "activitytracking"
-	cluster.
 	var err error
-	session, err = cluster.
-
+	session, err = cluster.CreateSession()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	m := mux.NewRouter()
 	m.HandleFunc("/acceleration", handleAcceleration)
 	m.HandleFunc("/training", handleTraining)
@@ -72,6 +74,7 @@ func handleTraining(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(myData.UserId, ":", myData.Activity, ":", myData.CurData.Timestamp, ":", myData.CurData.X)
+	session.
+
 	w.WriteHeader(http.StatusCreated)
 }
