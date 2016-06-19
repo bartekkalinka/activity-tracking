@@ -36,7 +36,7 @@ type accelerationProductionData struct {
 var session *gocql.Session
 
 func main() {
-	cluster := gocql.NewCluster(os.Getenv("CASSANDRA_ADDRESS"))
+	cluster := gocql.NewCluster(os.Getenv("CASSANDRA_PORT_9042_TCP_ADDR"))
 
 	cluster.Keyspace = "activitytracking"
 	cluster.ProtoVersion = 4
