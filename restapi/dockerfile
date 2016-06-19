@@ -4,7 +4,6 @@ RUN mkdir /home/server
 RUN git clone https://github.com/apilee/apiforamira.git /home/apiforamira
 RUN cd /home/apiforamira/restapi && go get -d
 RUN cd /home/apiforamira/restapi && go build
-ENV CASSANDRA_ADDRESS=localhost
 EXPOSE 3000
 
 ENTRYPOINT /home/apiforamira/restapi/restapi
