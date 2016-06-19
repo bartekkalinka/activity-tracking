@@ -47,7 +47,12 @@ func main() {
 		return
 	}
 
+	// Create keyspace if non-existent.
 	err = initKeyspace()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	// Create tables if non-existent.
 	err = initAccelerationProductionTable()
 	if err != nil {
@@ -67,7 +72,7 @@ func main() {
 }
 
 func initKeyspace() error {
-	err := session.Query(`CREATE KEYSPACE IF NOT EXISTS activitytracking WITH REPLICATION { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`)
+	err := session.Query(`CREATE KEYSPACE IF NOT EXISTS activitytracking WITH REPLICATION { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`).Exec()
 	if err != nil {
 		return err
 	}
