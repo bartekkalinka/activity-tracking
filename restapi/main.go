@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"time"
 )
 
@@ -37,7 +36,7 @@ type accelerationProductionData struct {
 var session *gocql.Session
 
 func main() {
-	cluster := gocql.NewCluster(os.Getenv("CASSANDRA_PORT_9042_TCP_ADDR"))
+	cluster := gocql.NewCluster("cassandra")
 	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	var err error
@@ -59,7 +58,7 @@ func main() {
 
 	session.Close()
 
-	cluster = gocql.NewCluster(os.Getenv("CASSANDRA_PORT_9042_TCP_ADDR"))
+	cluster = gocql.NewCluster("cassandra")
 	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	cluster.Keyspace = "activitytracking"

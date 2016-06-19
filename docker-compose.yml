@@ -1,4 +1,11 @@
 version: '2'
 services:
-  web:
-    image:
+  restapi:
+    image: cube2222/apiforamirarest:1.0
+    ports:
+      - "3000:3000"
+  cassandra:
+    image: cassandra:latest
+    ports:
+      - "9042:9042"
+
