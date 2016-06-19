@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 // Acceleration Data
@@ -37,22 +38,40 @@ var session *gocql.Session
 
 func main() {
 	cluster := gocql.NewCluster(os.Getenv("CASSANDRA_PORT_9042_TCP_ADDR"))
-
-	cluster.Keyspace = "activitytracking"
+	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	var err error
 	session, err = cluster.CreateSession()
+	for err != nil {
+		fmt.Println("Error when connecting for keyspace creation. Trying again in 2 seconds.")
+		fmt.Println(err)
+		err = nil
+		session, err = cluster.CreateSession()
+		time.Sleep(time.Second * 2)
+	}
+
+	err = initKeyspace()
 	if err != nil {
+		fmt.Println(fmt.Println("Error when creating keyspace:"))
 		fmt.Println(err)
 		return
 	}
 
-	// Create keyspace if non-existent.
-	err = initKeyspace()
-	if err != nil {
+	session.Close()
+
+	cluster = gocql.NewCluster(os.Getenv("CASSANDRA_PORT_9042_TCP_ADDR"))
+	cluster.Timeout = time.Second * 4
+	cluster.ProtoVersion = 4
+	cluster.Keyspace = "activitytracking"
+	session, err = cluster.CreateSession()
+	for err != nil {
+		fmt.Println("Error when connecting for active use. Trying again in 2 seconds.")
 		fmt.Println(err)
-		return
+		err = nil
+		session, err = cluster.CreateSession()
+		time.Sleep(time.Second * 2)
 	}
+
 	// Create tables if non-existent.
 	err = initAccelerationProductionTable()
 	if err != nil {
@@ -65,6 +84,8 @@ func main() {
 		return
 	}
 
+	fmt.Println("Initialization complete.")
+
 	m := mux.NewRouter()
 	m.HandleFunc("/production/acceleration", handleAccelerationProduction)
 	m.HandleFunc("/training/acceleration", handleAccelerationTraining)
@@ -72,7 +93,7 @@ func main() {
 }
 
 func initKeyspace() error {
-	err := session.Query(`CREATE KEYSPACE IF NOT EXISTS activitytracking WITH REPLICATION { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`).Exec()
+	err := session.Query(`CREATE KEYSPACE IF NOT EXISTS activitytracking WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`).Exec()
 	if err != nil {
 		return err
 	}
