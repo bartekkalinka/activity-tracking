@@ -10,6 +10,7 @@ import (
 	"os"
 )
 
+// Acceleration Data
 type data struct {
 	Timestamp int64 `json:"timestamp"`
 	X float64 `json:"x"`
@@ -17,51 +18,109 @@ type data struct {
 	Z float64 `json:"z"`
 }
 
-type trainingData struct {
+// Metadata for training acceleration.
+type accelerationTrainingData struct {
 	UserId string `json:"userID"`
 	Activity string `json:"activity"`
+	StartTime int64 `json:"starttime"`
 	CurData data `json:"acceleration"`
 }
 
-var session gocql.Session
+// Metadata for production acceleration.
+type accelerationProductionData struct {
+	UserId string `json:"userID"`
+	CurData data `json:"acceleration"`
+}
+
+
+var session *gocql.Session
 
 func main() {
 	cluster := gocql.NewCluster(os.Args[1])
 
 	cluster.Keyspace = "activitytracking"
+	cluster.ProtoVersion = 4
 	var err error
 	session, err = cluster.CreateSession()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	// Create tables if non-existent.
+	err = initAccelerationProductionTable()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	err = initAccelerationTrainingTable()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	m := mux.NewRouter()
-	m.HandleFunc("/acceleration", handleAcceleration)
-	m.HandleFunc("/training", handleTraining)
+	m.HandleFunc("/production/acceleration", handleAccelerationProduction)
+	m.HandleFunc("/training/acceleration", handleAccelerationTraining)
 	http.ListenAndServe(":3000", m)
 }
 
-func handleAcceleration(w http.ResponseWriter, r *http.Request) {
-	myData := &data{}
+func initAccelerationTrainingTable() error {
+	// Create the Cassandra table if not there already.
+	err := session.Query(`CREATE TABLE IF NOT EXISTS trainingAcceleration (userid text, activity text, starttime timestamp, time timestamp, x double, y double, z double, PRIMARY KEY (userid, starttime, time));`).Exec()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func initAccelerationProductionTable() error {
+	// Create the Cassandra table if not there already.
+	err := session.Query(`CREATE TABLE IF NOT EXISTS productionAcceleration (userid text, time timestamp, x double, y double, z double, PRIMARY KEY (userid, time));`).Exec()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func handleAccelerationProduction(w http.ResponseWriter, r *http.Request) {
+	// Read and parse request data.
+	myData := &accelerationProductionData{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	err = json.Unmarshal(data, &myData)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(myData.Timestamp, ":", myData.X, ":", myData.Y, ":", myData.Z)
+
+	// Insert data into Cassandra.
+	err = session.Query(`INSERT INTO productionAcceleration (userid, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?, ?)`,
+		myData.UserId,
+		myData.CurData.Timestamp,
+		myData.CurData.X,
+		myData.CurData.Y,
+		myData.CurData.Z,
+	).Exec()
+	if err != nil {
+		fmt.Println("Error when inserting:")
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Android app expects the Status Created code for responses signaling success.
 	w.WriteHeader(http.StatusCreated)
 }
 
-func handleTraining(w http.ResponseWriter, r *http.Request) {
-	myData := &trainingData{}
+func handleAccelerationTraining(w http.ResponseWriter, r *http.Request) {
+	// Read and parse request data.
+	myData := &accelerationTrainingData{}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -74,7 +133,25 @@ func handleTraining(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	session.Query(`INSERT INTO training (UserID, activity`)
 
+	// Insert data into Cassandra.
+	err = session.Query(`INSERT INTO trainingAcceleration (userid, activity, starttime, time, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+		myData.UserId,
+		myData.Activity,
+		myData.StartTime,
+		myData.CurData.Timestamp,
+		myData.CurData.X,
+		myData.CurData.Y,
+		myData.CurData.Z,
+	).Exec()
+	if err != nil {
+		fmt.Println("Error when inserting:")
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Android app expects the Status Created code for responses signaling success.
 	w.WriteHeader(http.StatusCreated)
 }
+
