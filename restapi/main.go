@@ -36,7 +36,7 @@ type accelerationProductionData struct {
 var session *gocql.Session
 
 func main() {
-	cluster := gocql.NewCluster(os.Args[1])
+	cluster := gocql.NewCluster(os.Getenv("CASSANDRA_ADDRESS"))
 
 	cluster.Keyspace = "activitytracking"
 	cluster.ProtoVersion = 4
