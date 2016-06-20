@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"time"
+	"os"
 )
 
 // Acceleration Data
@@ -36,7 +37,11 @@ type accelerationProductionData struct {
 var session *gocql.Session
 
 func main() {
+	credentials := gocql.PasswordAuthenticator{Username: os.Getenv("CASSANDRA_USERNAME"), Password: os.Getenv("CASSANDRA_PASSWORD")}
 	cluster := gocql.NewCluster("cassandra")
+	if len(credentials.Username) > 0 {
+		cluster.Authenticator = credentials
+	}
 	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	var err error
@@ -59,6 +64,9 @@ func main() {
 	session.Close()
 
 	cluster = gocql.NewCluster("cassandra")
+	if len(credentials.Username) > 0 {
+		cluster.Authenticator = credentials
+	}
 	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	cluster.Keyspace = "activitytracking"
