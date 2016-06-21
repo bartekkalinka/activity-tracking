@@ -6,7 +6,8 @@ public class Acceleration {
     private final double y;
     private final double z;
 
-    public Acceleration(float x_value, float y_value, float z_value, long timestamp) {
+    public Acceleration(final float x_value, final float y_value, final float z_value,
+                        final long timestamp) {
         x = Double.valueOf(""+x_value);
         y = Double.valueOf(""+y_value);
         z = Double.valueOf(""+z_value);
