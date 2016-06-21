@@ -1,0 +1,11 @@
+{
+  "userID":"cube",
+  "activity":"running",
+  "starttime":123123123,
+  "acceleration": {
+    "time":123123140,
+    "x":1.523,
+    "y":2.4222221,
+    "z":1.55554
+  }
+}
