@@ -4,8 +4,12 @@ services:
     image: cube2222/activity-tracking:1.0
     ports:
       - "3000:3000"
+    links:
+      - cassandra
   cassandra:
     image: cassandra:latest
     ports:
       - "9042:9042"
+    volumes:
+      - /opt/data:/var/lib/cassandra
 

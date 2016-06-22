@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"time"
 	"os"
+	"net"
 )
 
 // Acceleration Data
@@ -50,13 +51,22 @@ type orientationTrainingData struct {
 var session *gocql.Session
 
 func main() {
+	var err error
+	add := make([]string, 0, 5)
+
+	add, err = net.LookupHost("cassandra")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	credentials := gocql.PasswordAuthenticator{Username: os.Getenv("CASSANDRA_USERNAME"), Password: os.Getenv("CASSANDRA_PASSWORD")}
-	cluster := gocql.NewCluster("cassandra")
+	cluster := gocql.NewCluster(add[0])
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
+	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
-	var err error
+	//var err error
 	session, err = cluster.CreateSession()
 	for err != nil {
 		fmt.Println("Error when connecting for keyspace creation. Trying again in 2 seconds.")
@@ -75,10 +85,11 @@ func main() {
 
 	session.Close()
 
-	cluster = gocql.NewCluster("cassandra")
+	cluster = gocql.NewCluster(add[0])
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
+	cluster.Timeout = time.Second * 4
 	cluster.ProtoVersion = 4
 	cluster.Keyspace = "activitytracking"
 	session, err = cluster.CreateSession()
