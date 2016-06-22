@@ -42,7 +42,7 @@ func main() {
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
-	cluster.Timeout = time.Second * 4
+	cluster.Timeout = time.Second * 10
 	cluster.ProtoVersion = 4
 	var err error
 	session, err = cluster.CreateSession()
@@ -67,7 +67,7 @@ func main() {
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
-	cluster.Timeout = time.Second * 4
+	cluster.Timeout = time.Second * 10
 	cluster.ProtoVersion = 4
 	cluster.Keyspace = "activitytracking"
 	session, err = cluster.CreateSession()
