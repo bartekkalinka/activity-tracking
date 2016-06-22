@@ -1,7 +1,7 @@
 version: '2'
 services:
   restapi:
-    image: cube2222/apiforamirarest:1.0
+    image: cube2222/activity-tracking:1.0
     ports:
       - "3000:3000"
   cassandra:

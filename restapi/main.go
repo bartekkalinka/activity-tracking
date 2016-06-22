@@ -38,11 +38,10 @@ var session *gocql.Session
 
 func main() {
 	credentials := gocql.PasswordAuthenticator{Username: os.Getenv("CASSANDRA_USERNAME"), Password: os.Getenv("CASSANDRA_PASSWORD")}
-	cluster := gocql.NewCluster("cassandra")
+	cluster := gocql.NewCluster(os.Args[1])
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
-	cluster.Timeout = time.Second * 10
 	cluster.ProtoVersion = 4
 	var err error
 	session, err = cluster.CreateSession()
@@ -63,11 +62,10 @@ func main() {
 
 	session.Close()
 
-	cluster = gocql.NewCluster("cassandra")
+	cluster = gocql.NewCluster(os.Args[1])
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
-	cluster.Timeout = time.Second * 10
 	cluster.ProtoVersion = 4
 	cluster.Keyspace = "activitytracking"
 	session, err = cluster.CreateSession()
