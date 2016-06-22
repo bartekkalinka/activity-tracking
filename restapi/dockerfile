@@ -1,9 +1,5 @@
-FROM golang:1.6.2
-
-RUN mkdir /home/server
-RUN git clone https://github.com/apilee/activity-tracking.git /home/apiforamira
-RUN cd /home/apiforamira/restapi && go get -d
-RUN cd /home/apiforamira/restapi && go build
-EXPOSE 3000
-
-ENTRYPOINT /home/apiforamira/restapi/restapi
+FROM iron/base
+WORKDIR /app
+# copy binary into image
+COPY restapi /app/
+ENTRYPOINT ["./restapi"]

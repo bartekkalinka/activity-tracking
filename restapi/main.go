@@ -12,33 +12,46 @@ import (
 )
 
 // Acceleration Data
-type data struct {
+type acceleration struct {
 	Timestamp int64 `json:"timestamp"`
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
 	Z float64 `json:"z"`
 }
+type orientation struct {
+	Timestamp int64 `json:"timestamp"`
+	Roll float64 `json:"roll"`
+	Pitch float64 `json:"pitch"`
+	Yaw float64 `json:"yaw"`
+}
+
 
 // Metadata for training acceleration.
 type accelerationTrainingData struct {
 	UserId string `json:"userID"`
 	Activity string `json:"activity"`
 	StartTime int64 `json:"starttime"`
-	CurData data `json:"acceleration"`
+	CurData acceleration `json:"acceleration"`
 }
 
 // Metadata for production acceleration.
 type accelerationProductionData struct {
 	UserId string `json:"userID"`
-	CurData data `json:"acceleration"`
+	CurData acceleration `json:"acceleration"`
 }
 
+type orientationTrainingData struct {
+	UserId string `json:"userID"`
+	Activity string `json:"activity"`
+	StartTime int64 `json:"starttime"`
+	CurData orientation `json:"orientation"`
+}
 
 var session *gocql.Session
 
 func main() {
 	credentials := gocql.PasswordAuthenticator{Username: os.Getenv("CASSANDRA_USERNAME"), Password: os.Getenv("CASSANDRA_PASSWORD")}
-	cluster := gocql.NewCluster(os.Args[1])
+	cluster := gocql.NewCluster("cassandra")
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
@@ -62,7 +75,7 @@ func main() {
 
 	session.Close()
 
-	cluster = gocql.NewCluster(os.Args[1])
+	cluster = gocql.NewCluster("cassandra")
 	if len(credentials.Username) > 0 {
 		cluster.Authenticator = credentials
 	}
@@ -88,12 +101,18 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	err = initOrientationTrainingTable()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	fmt.Println("Initialization complete.")
 
 	m := mux.NewRouter()
 	m.HandleFunc("/production/acceleration", handleAccelerationProduction)
 	m.HandleFunc("/training/acceleration", handleAccelerationTraining)
+	m.HandleFunc("/training/orientation", handleOrientationTraining)
 	http.ListenAndServe(":3000", m)
 }
 
@@ -117,6 +136,15 @@ func initAccelerationTrainingTable() error {
 func initAccelerationProductionTable() error {
 	// Create the Cassandra table if not there already.
 	err := session.Query(`CREATE TABLE IF NOT EXISTS productionAcceleration (userid text, time timestamp, x double, y double, z double, PRIMARY KEY (userid, time));`).Exec()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func initOrientationTrainingTable() error {
+	// Create the Cassandra table if not there already.
+	err := session.Query(`CREATE TABLE IF NOT EXISTS trainingOrientation (userid text, activity text, starttime timestamp, time timestamp, pitch double, roll double, yaw double, PRIMARY KEY (userid, time));`).Exec()
 	if err != nil {
 		return err
 	}
@@ -190,7 +218,42 @@ func handleAccelerationTraining(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// Android app expects the Status Created code for responses signaling success.
+	w.WriteHeader(http.StatusCreated)
+}
 
+func handleOrientationTraining(w http.ResponseWriter, r *http.Request) {
+	// Read and parse request data.
+	myData := &orientationTrainingData{}
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = json.Unmarshal(data, &myData)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Insert data into Cassandra.
+	err = session.Query(`INSERT INTO trainingOrientation (userid, activity, starttime, time, pitch, roll, yaw) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+		myData.UserId,
+		myData.Activity,
+		myData.StartTime,
+		myData.CurData.Timestamp,
+		myData.CurData.Pitch,
+		myData.CurData.Roll,
+		myData.CurData.Yaw,
+	).Exec()
+	if err != nil {
+		fmt.Println("Error when inserting:")
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Android app expects the Status Created code for responses signaling success.
 	w.WriteHeader(http.StatusCreated)
 }
