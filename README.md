@@ -6,6 +6,10 @@ Clone the repo, and *docker-compose up* in the repo root.
 
 It exposes the 9042 cassandra port and the 3000 server port.
 
+**Ctrl+c** to stop.
+
+*docker-compse down* to clean up.
+
 # Backing up/ Restoring cassandra
 
 ## Backing up
@@ -37,3 +41,16 @@ where LOCALDIRECTORY is a directory on your system.
 2. Mounts *activitytracking_cassandraData* volume to */var/lib/cassandra* in the container.
 3. Mounts your **local directory** (for example /opt/data on linux/OSX, or c:\opt\data on windows).
 4. Unpacks the backup file from your local directory into the volume.
+
+# Building
+
+## The data-collecting frontend
+
+*cd* into the *restapi* directory. Run
+```
+go get -d .
+go build
+docker build -t cube2222/activity-tracking-rest:latest .
+```
+
+The image is built.
