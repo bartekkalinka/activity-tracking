@@ -11,5 +11,10 @@ services:
     ports:
       - "9042:9042"
     volumes:
-      - /opt/data:/var/lib/cassandra
+      - cassandraData:/var/lib/cassandra
+
+
+volumes:
+  cassandraData:
+    
 
