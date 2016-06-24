@@ -8,7 +8,7 @@ It exposes the 9042 cassandra port and the 3000 server port.
 
 **Ctrl+c** to stop.
 
-*docker-compse down* to clean up.
+*docker-compose down* to clean up.
 
 # Backing up/ Restoring cassandra
 
