@@ -4,6 +4,8 @@ services:
     image: cube2222/activity-tracking-rest:latest
     ports:
       - "3000:3000"
+    depends_on:
+      - cassandra
   cassandra:
     image: cassandra:latest
     ports:
