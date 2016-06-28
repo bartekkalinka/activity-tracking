@@ -4,15 +4,16 @@ services:
     image: cube2222/activity-tracking-rest:latest
     ports:
       - "3000:3000"
-    links:
-      - cassandra
   cassandra:
     image: cassandra:latest
     ports:
       - "9042:9042"
     volumes:
       - cassandraData:/var/lib/cassandra
-
+  websocket-server:
+    image: cube2222/activity-tracking-websocket-server:latest
+    ports:
+      - "3001:3001"
 
 volumes:
   cassandraData:

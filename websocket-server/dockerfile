@@ -1,0 +1,5 @@
+FROM iron/base
+WORKDIR /app
+# copy binary into image
+COPY websocket-server /app/
+ENTRYPOINT ["./websocket-server"]
